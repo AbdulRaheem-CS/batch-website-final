@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
-import ProductSection from "../../components/ProductSection";
+import ProductSection10 from "../../components/ProductSection10";
 
 export default function ProductsPage() {
 	return (
 		<main className="min-h-screen bg-white text-black flex items-center justify-center">
-			<ProductSection />
+			<ProductSection10 />
 		</main>
 	);
 }
