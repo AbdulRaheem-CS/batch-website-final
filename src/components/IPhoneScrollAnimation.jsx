@@ -845,14 +845,17 @@ function ProductSectionOverlay({ scrollProgress }) {
         }
     }, [scrollProgress, slideUp, opacity, scale]);
 
+    const isActive = scrollProgress >= 0.94;
+
     return (
         <div
             ref={productRef}
-            className="absolute inset-0 z-20 pointer-events-auto"
+            className={`absolute inset-0 z-20 ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}`}
             style={{
                 transform: 'translateY(100vh)',
                 opacity: 0,
-                scale: 0.95
+                scale: 0.95,
+                visibility: isActive ? 'visible' : 'hidden'
             }}
         >
             <ProductSection10 />
@@ -865,25 +868,33 @@ export default function IPhoneScrollAnimation() {
     const [scrollProgress, setScrollProgress] = useState(0);
 
     useEffect(() => {
+        let ticking = false;
+
         const handleScroll = () => {
-            if (containerRef.current) {
-                const rect = containerRef.current.getBoundingClientRect();
-                const containerTop = rect.top;
-                const containerHeight = rect.height;
-                const windowHeight = window.innerHeight;
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    if (containerRef.current) {
+                        const rect = containerRef.current.getBoundingClientRect();
+                        const containerTop = rect.top;
+                        const containerHeight = rect.height;
+                        const windowHeight = window.innerHeight;
 
-                const scrollStart = -containerHeight + windowHeight;
-                const scrollEnd = windowHeight;
-                const scrollRange = scrollEnd - scrollStart;
+                        const scrollStart = -containerHeight + windowHeight;
+                        const scrollEnd = windowHeight;
+                        const scrollRange = scrollEnd - scrollStart;
 
-                const currentScroll = Math.max(0, Math.min(scrollRange, -containerTop + windowHeight));
-                const progress = currentScroll / scrollRange;
+                        const currentScroll = Math.max(0, Math.min(scrollRange, -containerTop + windowHeight));
+                        const progress = currentScroll / scrollRange;
 
-                setScrollProgress(Math.max(0, Math.min(1, progress)));
+                        setScrollProgress(Math.max(0, Math.min(1, progress)));
+                    }
+                    ticking = false;
+                });
+                ticking = true;
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         handleScroll();
 
         return () => window.removeEventListener('scroll', handleScroll);
@@ -892,7 +903,7 @@ export default function IPhoneScrollAnimation() {
     return (
         <section
             ref={containerRef}
-            className="relative h-[1000vh] bg-white mt-5"
+            className="relative h-[500vh] bg-white mt-5"
         >
             <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
                 <Canvas
