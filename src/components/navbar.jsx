@@ -1,18 +1,62 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 function Navbar() {
 	const [isExpanded, setIsExpanded] = useState(false);
+	const [isPlaying, setIsPlaying] = useState(false);
+
+	const audioRef = useRef(null);
+
+	useEffect(() => {
+		// cleanup on unmount
+		return () => {
+			if (audioRef.current) {
+				try { audioRef.current.pause(); } catch (e) {}
+				audioRef.current = null;
+			}
+		};
+	}, []);
+
+	const toggleAudio = async () => {
+		if (!audioRef.current) {
+			audioRef.current = new Audio('/media/audio.mp3');
+			audioRef.current.loop = true;
+			audioRef.current.volume = 0.25; // sensible default
+		}
+
+		try {
+			if (audioRef.current.paused) {
+				await audioRef.current.play();
+				setIsPlaying(true);
+			} else {
+				audioRef.current.pause();
+				setIsPlaying(false);
+			}
+		} catch (err) {
+			// play() can fail if browser blocks; log for debugging
+			// eslint-disable-next-line no-console
+			console.error('Audio play error', err);
+		}
+	};
 
 	return (
 		<nav className="w-full ml-10 mt-3 mb-3 fixed top-0 left-0 h-20 px-8 box-border z-50">
 			<div className="max-w-[1400px] h-20 mx-auto flex items-center justify-between gap-6">
-				<img
-					src="/images/nav/Volume%20Icon.png"
-					alt="Volume Icon"
-					className="h-14 w-auto block"
-				/>
+				{/* Volume toggle — click to play/pause background audio */}
+				<button
+					type="button"
+					onClick={toggleAudio}
+					aria-pressed={audioRef.current ? !audioRef.current.paused : false}
+					title="Toggle background audio"
+					className="inline-flex items-center justify-center p-0 bg-transparent border-0"
+				>
+					<img
+						src="/images/nav/Volume%20Icon.png"
+						alt="Volume Icon"
+						className={`h-14 w-auto block ${audioRef.current && !audioRef.current.paused ? 'opacity-100' : 'opacity-80'}`}
+					/>
+				</button>
 
 				<div
 					className="relative flex items-center justify-center"
